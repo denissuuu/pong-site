@@ -1,0 +1,522 @@
+/* ==========================================================================
+   Planning public : barre de navigation, onglets de jours (mobile),
+   grille de la semaine (ordinateur), états des créneaux, fenêtre de réservation.
+   ========================================================================== */
+
+/* Dimensions des créneaux : grandes zones tactiles sur mobile */
+.planning {
+  --hauteur: 3.5rem;
+  --ecart: 0.4rem;
+  --titre-jour: 4rem;
+}
+@media (min-width: 900px) {
+  .planning { --hauteur: 2.6rem; --ecart: 0.3rem; }
+}
+
+/* ---------- Barre : titre de la semaine + navigation ---------- */
+.barre {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-top: -1.75rem;
+  padding: 1rem 1rem 1rem 1.25rem;
+  border-radius: var(--rayon-l);
+  background: var(--surface);
+  box-shadow: var(--ombre-2);
+}
+.barre__titre { display: grid; gap: 0.1rem; }
+.barre__sur-titre {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre-douce);
+}
+.barre h2 { font-size: clamp(1.2rem, 3.5vw, 1.55rem); }
+.barre__actions { display: flex; align-items: center; gap: 0.35rem; }
+
+/* ---------- Légende ---------- */
+.legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--encre-douce);
+}
+.legende li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.legende__puce {
+  width: 1rem; height: 1rem;
+  border-radius: 5px;
+  border: 1.5px solid var(--bordure-forte);
+  background: var(--surface);
+}
+.legende__puce--reserve { background: var(--table-pale); border-color: var(--table-pale-bord); }
+.legende__puce--moi { background: var(--balle-pale); border-color: var(--balle); }
+.legende__puce--bloque {
+  border-color: var(--bloque-raye);
+  background: repeating-linear-gradient(-45deg, var(--bloque) 0 3px, var(--bloque-raye) 3px 6px);
+}
+.legende__puce--passe { opacity: 0.45; background: var(--bloque); border-style: dashed; }
+
+/* ---------- Onglets de jours (mobile uniquement) ---------- */
+.onglets {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.25rem -1rem 0;
+  padding: 0.25rem 1rem 0.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1rem;
+  scrollbar-width: none;
+}
+.onglets::-webkit-scrollbar { display: none; }
+.onglet {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: center;
+  gap: 0.05rem;
+  min-width: 4.1rem;
+  padding: 0.55rem 0.6rem 0.6rem;
+  border: 1.5px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  scroll-snap-align: start;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.15s var(--doux), box-shadow 0.2s;
+}
+.onglet:active { transform: scale(0.96); }
+.onglet__jour { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--encre-douce); }
+.onglet__num { font-family: var(--police-titre); font-size: 1.45rem; font-weight: 800; line-height: 1.1; }
+.onglet__libres { font-size: 0.72rem; color: var(--encre-douce); }
+.onglet.est-aujourdhui .onglet__num { color: var(--balle-texte); }
+.onglet.est-passe { border-style: dashed; background: transparent; } /* pas d'opacité : contraste AA conservé */
+.onglet[aria-pressed='true'] {
+  background: var(--table);
+  border-color: var(--table);
+  color: #fff;
+  box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--table) 80%, transparent);
+}
+.onglet[aria-pressed='true'] .onglet__jour,
+.onglet[aria-pressed='true'] .onglet__libres,
+.onglet[aria-pressed='true'] .onglet__num { color: #fff; }
+@media (prefers-color-scheme: dark) {
+  .onglet[aria-pressed='true'] { background: #1f9a6f; border-color: #1f9a6f; color: #04140e; }
+  .onglet[aria-pressed='true'] .onglet__jour,
+  .onglet[aria-pressed='true'] .onglet__libres,
+  .onglet[aria-pressed='true'] .onglet__num { color: #04140e; }
+}
+@media (min-width: 900px) { .onglets { display: none; } }
+
+/* ---------- Grille ---------- */
+.planning {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ecart);
+  margin-top: 1rem;
+}
+@media (min-width: 900px) {
+  .planning {
+    grid-template-columns: 3.25rem repeat(7, minmax(0, 1fr));
+    margin-top: 1.5rem;
+    padding: 1rem 1rem 1.25rem 0.5rem;
+    border-radius: var(--rayon-l);
+    background: var(--surface-2);
+    border: 1px solid var(--bordure);
+  }
+}
+
+/* Colonne des heures (ordinateur) */
+.heures { display: none; }
+@media (min-width: 900px) {
+  .heures {
+    display: grid;
+    grid-template-rows: var(--titre-jour) repeat(22, var(--hauteur));
+    row-gap: var(--ecart);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--encre-douce);
+    text-align: right;
+  }
+  .heures span { transform: translateY(-0.55em); padding-right: 0.15rem; }
+  .heures span:nth-child(odd) { visibility: hidden; } /* on n'affiche que les heures pleines */
+  .heures span:first-child { visibility: hidden; }
+}
+
+/* Colonne d'un jour */
+.jour { display: none; min-width: 0; }
+.jour.est-actif { display: block; }
+@media (min-width: 900px) {
+  .jour { display: block; }
+}
+.jour__titre {
+  display: none;
+  height: var(--titre-jour);
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+@media (min-width: 900px) {
+  .jour__titre {
+    display: grid;
+    align-content: end;
+    justify-items: center;
+    gap: 0.1rem;
+  }
+}
+.jour__nom { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--encre-douce); }
+.jour__num {
+  display: grid;
+  place-items: center;
+  width: 2.3rem; height: 2.3rem;
+  border-radius: 50%;
+  font-family: var(--police-titre);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.jour.est-aujourdhui .jour__num { background: var(--balle); color: #1a0d04; }
+.jour.est-passe .jour__num { color: var(--encre-douce); }
+
+/* Titre du jour visible sur mobile, au-dessus de la liste */
+.jour__titre-mobile {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.25rem;
+}
+@media (min-width: 900px) { .jour__titre-mobile { display: none; } }
+
+/* Mobile : simple liste chronologique (chaque bloc a sa hauteur naturelle).
+   Ordinateur : vraie grille de 22 demi-heures, les réservations s'étendent sur plusieurs lignes. */
+.jour__creneaux {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ecart);
+}
+.jour__creneaux > * { min-height: var(--hauteur); }
+@media (min-width: 900px) {
+  .jour__creneaux {
+    display: grid;
+    grid-template-rows: repeat(22, var(--hauteur));
+  }
+  .jour__creneaux > * { min-height: 0; }
+}
+
+/* ==========================================================================
+   Créneaux — un style par état
+   ========================================================================== */
+.creneau {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--rayon-s);
+  font-size: 0.95rem;
+  line-height: 1.25;
+  text-align: left;
+}
+@media (min-width: 900px) {
+  .creneau { padding: 0.35rem 0.55rem; font-size: 0.82rem; gap: 0.4rem; border-radius: 9px; }
+}
+.creneau__heure { font-weight: 600; font-variant-numeric: tabular-nums; }
+.creneau__texte { min-width: 0; display: grid; gap: 0.1rem; flex: 1; }
+.creneau__nom { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.creneau__detail { font-size: 0.85em; color: var(--encre-douce); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.creneau svg { width: 1.05rem; height: 1.05rem; flex: none; }
+
+/* --- Libre : carte blanche invitante --- */
+.creneau--libre {
+  width: 100%;
+  border: 1.5px solid var(--bordure);
+  background: var(--surface);
+  color: var(--encre);
+  box-shadow: var(--ombre-1);
+  transition: border-color 0.15s, background-color 0.15s, transform 0.15s var(--doux), box-shadow 0.15s;
+}
+.creneau--libre .creneau__etat { color: var(--encre-douce); font-size: 0.9rem; }
+.creneau--libre .creneau__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--balle-pale);
+  color: var(--balle-texte);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.creneau--libre:hover {
+  border-color: var(--balle);
+  transform: translateY(-1px);
+  box-shadow: var(--ombre-2);
+}
+.creneau--libre:active { transform: scale(0.98); }
+
+/* Sur ordinateur, la case libre est épurée : un "+" et l'heure apparaissent au survol */
+@media (min-width: 900px) {
+  .creneau--libre { justify-content: center; box-shadow: none; }
+  .creneau--libre .creneau__etat,
+  .creneau--libre .creneau__cta { display: none; }
+  .creneau--libre .creneau__heure { opacity: 0; transition: opacity 0.15s; color: var(--balle-texte); }
+  .creneau--libre::before {
+    content: '+';
+    position: absolute;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--bordure-forte);
+    transition: opacity 0.15s;
+  }
+  .creneau--libre:hover, .creneau--libre:focus-visible { background: var(--balle-pale); }
+  .creneau--libre:hover .creneau__heure,
+  .creneau--libre:focus-visible .creneau__heure { opacity: 1; }
+  .creneau--libre:hover::before,
+  .creneau--libre:focus-visible::before { opacity: 0; }
+}
+
+/* --- Réservé par quelqu'un --- */
+.creneau--reserve {
+  border: 1.5px solid var(--table-pale-bord);
+  background: var(--table-pale);
+  color: var(--table-profond);
+}
+@media (prefers-color-scheme: dark) { .creneau--reserve { color: #cdebdc; } }
+.creneau--reserve .creneau__detail { color: color-mix(in srgb, currentColor 75%, transparent); }
+.creneau--reserve .icone-raquette { color: var(--table); }
+
+/* --- Ta réservation : l'orange balle ressort --- */
+.creneau--moi {
+  border: 2px solid var(--balle);
+  background: var(--balle-pale);
+  color: var(--encre);
+  box-shadow: 0 6px 16px -10px rgb(255 107 26 / 0.8);
+}
+.badge-moi {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: fit-content;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--balle);
+  color: #1a0d04;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.btn-annuler {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.8rem;
+  border: 1.5px solid color-mix(in srgb, var(--balle-texte) 40%, transparent);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--balle-texte);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.btn-annuler:hover { border-color: var(--balle-texte); background: var(--balle-pale); }
+@media (min-width: 900px) {
+  .btn-annuler { min-height: 1.9rem; padding: 0.15rem 0.55rem; font-size: 0.75rem; }
+  .creneau--moi { flex-direction: column; align-items: stretch; justify-content: center; }
+  .creneau--moi .btn-annuler { margin-left: 0; justify-content: center; }
+  /* Réservation de 30 min : version compacte sur une ligne */
+  .creneau--moi.est-court { flex-direction: row; align-items: center; }
+  .creneau--moi.est-court .creneau__detail { display: none; }
+  .creneau--moi.est-court .btn-annuler { margin-left: auto; width: 1.9rem; padding: 0; }
+  .creneau--moi.est-court .btn-annuler span { display: none; }
+  .creneau.est-court .creneau__detail { display: none; }
+}
+
+/* --- Bloqué par la mairie : hachures --- */
+.creneau--bloque {
+  align-items: flex-start;
+  border: 1.5px dashed var(--bordure-forte);
+  background: repeating-linear-gradient(-45deg, var(--bloque) 0 8px, var(--bloque-raye) 8px 16px);
+  color: var(--encre);
+}
+.creneau--bloque .creneau__texte { padding: 0.1rem 0.4rem; border-radius: 6px; background: var(--surface); width: fit-content; max-width: 100%; }
+.creneau--bloque .creneau__nom { white-space: normal; }
+
+/* --- Passé / pas encore ouvert --- */
+.creneau--passe,
+.creneau--ferme {
+  justify-content: center;
+  border: 1.5px dashed var(--bordure);
+  color: var(--encre-douce);
+  font-size: 0.85rem;
+}
+.creneau--passe { background: transparent; }
+.creneau--ferme { background: var(--surface-2); text-align: center; }
+/* Réservation terminée : couleurs neutres plutôt qu'une opacité (pour garder un contraste AA) */
+.creneau.est-passe {
+  border-style: dashed;
+  border-color: var(--bordure);
+  background: var(--surface-2);
+  color: var(--encre-douce);
+  box-shadow: none;
+}
+.creneau.est-passe .badge-moi { background: var(--bordure); color: var(--encre); }
+.creneau.est-passe svg { opacity: 0.6; }
+
+/* Les blocs longs alignent leur contenu en haut sur ordinateur */
+@media (min-width: 900px) {
+  .creneau--reserve:not(.est-court), .creneau--bloque { align-items: flex-start; padding-top: 0.5rem; }
+  .creneau--passe, .creneau--ferme { writing-mode: horizontal-tb; }
+}
+
+/* Squelette pendant le chargement */
+.squelette {
+  height: 18rem;
+  margin-top: 1.5rem;
+  border-radius: var(--rayon-l);
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--bordure) 50%, var(--surface-2) 100%) 0 0 / 200% 100%;
+  animation: reflet 1.4s ease-in-out infinite;
+}
+@keyframes reflet { to { background-position: -200% 0; } }
+
+/* Transition entre semaines */
+.planning.entree-suivante { animation: glisse-gauche 0.35s var(--doux); }
+.planning.entree-precedente { animation: glisse-droite 0.35s var(--doux); }
+@keyframes glisse-gauche { from { opacity: 0; transform: translateX(28px); } }
+@keyframes glisse-droite { from { opacity: 0; transform: translateX(-28px); } }
+
+/* Petite note sous le planning */
+.note-appareil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--encre-douce);
+  text-align: center;
+}
+.note-appareil svg { width: 1.1rem; height: 1.1rem; flex: none; }
+
+/* ==========================================================================
+   Fenêtre de réservation
+   ========================================================================== */
+.recap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--rayon);
+  background: var(--table);
+  color: #fff;
+}
+@media (prefers-color-scheme: dark) { .recap { background: #134d3a; } }
+.recap__icone {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.6rem; height: 2.6rem;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.14);
+}
+.recap__icone svg { width: 1.35rem; height: 1.35rem; }
+.recap__jour { font-size: 0.85rem; color: rgb(255 255 255 / 0.85); }
+.recap__heures {
+  font-family: var(--police-titre);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.recap__fleche { color: var(--balle); margin-inline: 0.15rem; }
+
+/* Boutons segmentés de durée */
+.segments { border: none; padding: 0; display: grid; gap: 0.5rem; min-width: 0; }
+.segments legend { padding: 0; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.95rem; }
+.segments__options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border-radius: calc(var(--rayon) + 2px);
+  background: var(--surface-2);
+  border: 1.5px solid var(--bordure);
+}
+.segments input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.segments label {
+  display: grid;
+  place-items: center;
+  min-height: 3.4rem;
+  border-radius: var(--rayon-s);
+  font-family: var(--police-titre);
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.18s, color 0.18s, box-shadow 0.18s, transform 0.15s var(--doux);
+}
+.segments label:hover { background: var(--surface); }
+.segments input:checked + label {
+  background: var(--surface);
+  color: var(--table);
+  box-shadow: var(--ombre-2), inset 0 0 0 2px var(--table);
+}
+@media (prefers-color-scheme: dark) { .segments input:checked + label { color: #6fdcb0; box-shadow: var(--ombre-2), inset 0 0 0 2px #1f9a6f; } }
+.segments input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+.segments input:disabled + label {
+  color: var(--encre-douce);
+  opacity: 0.45;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  cursor: not-allowed;
+  background: transparent;
+  box-shadow: none;
+}
+.segments__info { font-size: 0.85rem; color: var(--encre-douce); min-height: 1.25em; }
+
+/* Confirmation : la balle qui rebondit */
+.confirmation {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem 1.75rem;
+  text-align: center;
+}
+.confirmation h2 { font-size: 1.75rem; text-wrap: balance; }
+.confirmation p { color: var(--encre-douce); max-width: 22rem; }
+.confirmation .recap { width: 100%; text-align: left; margin-top: 0.25rem; }
+.confirmation .btn { margin-top: 0.75rem; min-width: 10rem; }
+.rebond { width: 7rem; height: 6.5rem; overflow: visible; }
+.rebond__balle { animation: rebond 1.3s cubic-bezier(0.3, 0, 0.6, 1) both; transform-box: fill-box; transform-origin: 50% 100%; }
+.rebond__ombre { animation: rebond-ombre 1.3s cubic-bezier(0.3, 0, 0.6, 1) both; transform-box: fill-box; transform-origin: center; }
+.rebond__coche { stroke-dasharray: 30; stroke-dashoffset: 30; animation: trace 0.4s 1.05s ease-out forwards; }
+@keyframes rebond {
+  0%   { transform: translateY(-70px); animation-timing-function: cubic-bezier(0.5, 0, 1, 1); }
+  30%  { transform: translateY(0) scale(1.1, 0.88); animation-timing-function: cubic-bezier(0, 0, 0.5, 1); }
+  52%  { transform: translateY(-30px) scale(1); animation-timing-function: cubic-bezier(0.5, 0, 1, 1); }
+  70%  { transform: translateY(0) scale(1.06, 0.93); animation-timing-function: cubic-bezier(0, 0, 0.5, 1); }
+  84%  { transform: translateY(-10px) scale(1); animation-timing-function: cubic-bezier(0.5, 0, 1, 1); }
+  94%  { transform: translateY(0) scale(1.02, 0.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes rebond-ombre {
+  0% { transform: scale(0.3); opacity: 0.2; }
+  30% { transform: scale(1); opacity: 0.5; }
+  52% { transform: scale(0.6); opacity: 0.3; }
+  70%, 100% { transform: scale(1); opacity: 0.5; }
+  84% { transform: scale(0.85); }
+}
+@keyframes trace { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .rebond__coche { stroke-dashoffset: 0; }
+}
