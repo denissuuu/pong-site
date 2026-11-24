@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Espace mairie · Ping-pong Saulnières</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0a4a37">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Inter:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="modulepreload" href="/js/dates.js">
+  <link rel="modulepreload" href="/js/api.js">
+  <link rel="modulepreload" href="/js/dom.js">
+  <script type="module" src="/js/admin.js"></script>
+</head>
+<body>
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+  <header class="entete entete--compacte">
+    <div class="conteneur entete__ligne">
+      <div>
+        <p class="entete__marque">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="#ff6b1a"/><path d="M6.5 11.5c5 2.5 14 2.5 19 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Ping-pong · Saulnières
+        </p>
+        <h1>Espace mairie</h1>
+      </div>
+      <div class="entete__actions">
+        <a class="btn btn--clair btn--petit" href="/">Voir le planning</a>
+        <button type="button" class="btn btn--clair btn--petit" id="deconnexion" hidden>Se déconnecter</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenu" class="conteneur" tabindex="-1">
+
+    <!-- ============ Connexion ============ -->
+    <section class="carte carte--connexion" id="ecran-connexion" aria-labelledby="titre-connexion">
+      <div class="connexion__icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+      </div>
+      <h2 id="titre-connexion">Connexion</h2>
+      <p class="aide">Accès réservé au personnel de la mairie.</p>
+      <form id="form-connexion" class="pile" novalidate>
+        <div class="champ">
+          <label for="mot-de-passe">Mot de passe</label>
+          <input class="saisie" type="password" id="mot-de-passe" autocomplete="current-password" required>
+        </div>
+        <p class="alerte" id="erreur-connexion" role="alert"></p>
+        <button type="submit" class="btn btn--table">Se connecter</button>
+      </form>
+    </section>
+
+    <!-- ============ Tableau de bord ============ -->
+    <div id="ecran-admin" class="tableau" hidden>
+
+      <!-- Résumé -->
+      <section class="resume" aria-label="En bref">
+        <div class="resume__case"><span class="resume__chiffre" id="stat-aujourdhui">–</span><span>aujourd'hui</span></div>
+        <div class="resume__case"><span class="resume__chiffre" id="stat-avenir">–</span><span>à venir</span></div>
+        <div class="resume__case"><span class="resume__chiffre" id="stat-blocages">–</span><span>blocages actifs</span></div>
+      </section>
+
+      <div class="tableau__colonnes">
+        <!-- Blocages -->
+        <section class="carte" aria-labelledby="titre-blocages">
+          <h2 id="titre-blocages">Bloquer la table</h2>
+          <p class="aide">Entretien, événement, intempéries… Le créneau apparaîtra comme indisponible.</p>
+
+          <form id="form-blocage" class="pile" novalidate>
+            <div class="champ">
+              <label for="blocage-date">Date</label>
+              <input class="saisie" type="date" id="blocage-date" required>
+            </div>
+
+            <label class="interrupteur">
+              <input type="checkbox" id="blocage-journee" checked>
+              <span class="interrupteur__piste" aria-hidden="true"></span>
+              Toute la journée
+            </label>
+
+            <div class="deux-colonnes" id="blocage-horaires" hidden>
+              <div class="champ">
+                <label for="blocage-debut">De</label>
+                <select class="saisie" id="blocage-debut"></select>
+              </div>
+              <div class="champ">
+                <label for="blocage-fin">À</label>
+                <select class="saisie" id="blocage-fin"></select>
+              </div>
+            </div>
+
+            <div class="champ">
+              <label for="blocage-motif">Motif (affiché au public)</label>
+              <input class="saisie" type="text" id="blocage-motif" maxlength="80" list="motifs" placeholder="Entretien de la table" required>
+              <datalist id="motifs">
+                <option value="Entretien de la table">
+                <option value="Événement municipal">
+                <option value="Intempéries">
+                <option value="Tournoi">
+                <option value="Travaux">
+              </datalist>
+            </div>
+
+            <p class="alerte" id="erreur-blocage" role="alert"></p>
+            <div id="conflits" class="avertissement" hidden></div>
+            <button type="submit" class="btn btn--table">Bloquer ce créneau</button>
+          </form>
+
+          <h3 class="sous-titre">Blocages à venir</h3>
+          <ul class="liste" id="liste-blocages" aria-live="polite"></ul>
+        </section>
+
+        <!-- Réservations -->
+        <section class="carte" aria-labelledby="titre-reservations">
+          <div class="carte__entete">
+            <h2 id="titre-reservations">Réservations</h2>
+            <button type="button" class="btn btn--petit" id="rafraichir">Actualiser</button>
+          </div>
+
+          <div class="filtres">
+            <div class="champ">
+              <label for="filtre-date">Date</label>
+              <input class="saisie" type="date" id="filtre-date">
+            </div>
+            <div class="champ">
+              <label for="filtre-prenom">Prénom</label>
+              <input class="saisie" type="search" id="filtre-prenom" placeholder="Rechercher…">
+            </div>
+            <label class="case">
+              <input type="checkbox" id="filtre-passees">
+              Afficher les réservations passées
+            </label>
+          </div>
+
+          <div id="liste-reservations" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="annonces" id="annonces" aria-live="polite"></div>
+</body>
+</html>

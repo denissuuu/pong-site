@@ -1,0 +1,235 @@
+/* ==========================================================================
+   Interface admin (mairie)
+   ========================================================================== */
+
+.entete--compacte .entete__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 2rem 3.5rem;
+}
+.entete--compacte h1 { font-size: clamp(2rem, 5vw, 2.8rem); }
+.entete--compacte .entete__marque { margin-bottom: 0.5rem; }
+.entete--compacte .entete__marque svg { width: 1.4rem; height: 1.4rem; }
+.entete__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn--clair {
+  --btn-fond: rgb(255 255 255 / 0.1);
+  --btn-texte: #fff;
+  --btn-bord: rgb(255 255 255 / 0.35);
+}
+.btn--clair:hover:not(:disabled) { --btn-fond: rgb(255 255 255 / 0.18); --btn-bord: #fff; }
+
+/* Cartes */
+.carte {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: var(--rayon-l);
+  background: var(--surface);
+  box-shadow: var(--ombre-2);
+}
+@media (min-width: 700px) { .carte { padding: 1.75rem 2rem 2rem; } }
+.carte h2 { font-size: 1.45rem; }
+.carte > .aide { margin-top: 0.35rem; }
+.carte__entete { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.sous-titre { margin: 2rem 0 0.75rem; font-size: 1.1rem; }
+.pile { display: grid; gap: 1.1rem; margin-top: 1.25rem; }
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+/* Connexion */
+.carte--connexion {
+  max-width: 26rem;
+  margin: -2rem auto 0;
+  text-align: center;
+}
+.carte--connexion form { text-align: left; }
+.connexion__icone {
+  display: grid;
+  place-items: center;
+  width: 3.5rem; height: 3.5rem;
+  margin: 0 auto 0.75rem;
+  border-radius: 50%;
+  background: var(--balle-pale);
+  color: var(--balle-texte);
+}
+.connexion__icone svg { width: 1.6rem; height: 1.6rem; }
+
+/* Tableau de bord */
+/* position: relative pour passer au-dessus de l'en-tête (chevauchement volontaire) */
+.tableau { position: relative; display: grid; gap: 1.25rem; margin-top: -2rem; }
+.tableau__colonnes { display: grid; gap: 1.25rem; align-items: start; }
+@media (min-width: 980px) { .tableau__colonnes { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } }
+
+.resume {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+.resume__case {
+  display: grid;
+  gap: 0.1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--rayon);
+  background: var(--surface);
+  box-shadow: var(--ombre-2);
+  font-size: 0.85rem;
+  color: var(--encre-douce);
+}
+.resume__chiffre {
+  font-family: var(--police-titre);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--table);
+}
+@media (prefers-color-scheme: dark) { .resume__chiffre { color: #6fdcb0; } }
+
+/* Interrupteur "Toute la journée" */
+.interrupteur, .case {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: fit-content;
+}
+.interrupteur input, .case input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.interrupteur__piste {
+  position: relative;
+  width: 2.9rem; height: 1.7rem;
+  border-radius: 99px;
+  background: var(--bordure-forte);
+  transition: background-color 0.2s;
+}
+.interrupteur__piste::after {
+  content: '';
+  position: absolute;
+  top: 0.2rem; left: 0.2rem;
+  width: 1.3rem; height: 1.3rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--ombre-1);
+  transition: transform 0.2s var(--ressort);
+}
+.interrupteur input:checked + .interrupteur__piste { background: var(--table); }
+.interrupteur input:checked + .interrupteur__piste::after { transform: translateX(1.2rem); }
+.interrupteur input:focus-visible + .interrupteur__piste { outline: 3px solid var(--focus); outline-offset: 2px; }
+.case input { position: static; opacity: 1; width: 1.15rem; height: 1.15rem; accent-color: var(--table); }
+
+/* Filtres */
+.filtres {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 1rem;
+  border-radius: var(--rayon);
+  background: var(--surface-2);
+  border: 1px solid var(--bordure);
+}
+.filtres .case { grid-column: 1 / -1; font-size: 0.92rem; }
+@media (max-width: 480px) { .filtres { grid-template-columns: 1fr; } }
+
+/* Listes */
+.liste { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.groupe-jour + .groupe-jour { margin-top: 1.5rem; }
+.groupe-jour h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 1.05rem;
+}
+.groupe-jour h3 .compte { font-family: var(--police-texte); font-size: 0.8rem; font-weight: 500; color: var(--encre-douce); }
+.groupe-jour.est-aujourdhui h3::before {
+  content: '';
+  width: 0.55rem; height: 0.55rem;
+  border-radius: 50%;
+  background: var(--balle);
+  align-self: center;
+}
+
+.ligne {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.75rem 0.7rem 1rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  animation: apparition 0.25s var(--doux);
+}
+.ligne.est-passee { opacity: 0.6; }
+.ligne.est-sortie { animation: disparition 0.25s ease-in forwards; }
+@keyframes apparition { from { opacity: 0; transform: translateY(4px); } }
+@keyframes disparition { to { opacity: 0; transform: translateX(16px); } }
+.ligne__heure {
+  flex: none;
+  min-width: 6.7rem;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ligne__texte { flex: 1; min-width: 0; display: grid; }
+.ligne__titre { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne__meta { font-size: 0.82rem; color: var(--encre-douce); }
+.ligne--blocage .ligne__titre { white-space: normal; }
+.ligne--blocage .ligne__heure { min-width: 5.5rem; }
+.ligne--blocage {
+  background: repeating-linear-gradient(-45deg, var(--surface) 0 10px, var(--bloque) 10px 20px);
+  border-style: dashed;
+  border-color: var(--bordure-forte);
+}
+/* Téléphone : l'horaire au-dessus, puis le texte et le bouton côte à côte */
+@media (max-width: 480px) {
+  .ligne { flex-wrap: wrap; row-gap: 0.2rem; }
+  .ligne__heure, .ligne--blocage .ligne__heure { flex-basis: 100%; min-width: 0; font-size: 0.92rem; }
+  .ligne__texte { flex: 1; }
+  .resume__case { padding: 0.8rem 0.9rem; font-size: 0.78rem; }
+  .resume__chiffre { font-size: 1.6rem; }
+}
+
+/* Bouton de suppression en deux temps : "Supprimer" → "Confirmer ?" */
+.btn-supprimer {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.8rem;
+  border: 1.5px solid var(--bordure-forte);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-supprimer svg { width: 1rem; height: 1rem; }
+.btn-supprimer:hover { border-color: var(--danger); }
+.btn-supprimer.est-confirmation { background: var(--danger); border-color: var(--danger); color: #fff; }
+@media (prefers-color-scheme: dark) { .btn-supprimer.est-confirmation { color: #1d0805; } }
+
+.vide {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 2rem 1rem;
+  border: 1.5px dashed var(--bordure-forte);
+  border-radius: var(--rayon);
+  color: var(--encre-douce);
+  text-align: center;
+}
+.vide svg { width: 2.5rem; height: 2.5rem; opacity: 0.8; }
+
+.avertissement {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--rayon-s);
+  background: var(--balle-pale);
+  border: 1.5px solid color-mix(in srgb, var(--balle) 45%, transparent);
+  font-size: 0.92rem;
+}
+.avertissement strong { color: var(--balle-texte); }
